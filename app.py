@@ -1,7 +1,7 @@
+from random import randrange
+from typing import Optional
 from fastapi import FastAPI, HTTPException, Response, status
 from pydantic import BaseModel
-from random import randrange
-
 
 app = FastAPI()
 
@@ -9,6 +9,8 @@ app = FastAPI()
 class Post(BaseModel):
     title: str
     content: str
+    published: bool = True
+    rating: Optional[int] = None
 
 
 my_posts = [
@@ -17,7 +19,7 @@ my_posts = [
 ]
 
 
-def find_posts(id):
+def find_posts(id: int):
     for post in my_posts:
         if post["id"] == id:
             return post
@@ -56,10 +58,25 @@ def get_post(id: int):
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int):
     post = find_posts(id)
-    if post == None:
+    if post is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"post with id: {id} was not found",
         )
     my_posts.remove(post)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.put("/posts/{id}")
+def update_post(id: int, post: Post):
+    existing_post = find_posts(id)
+    if existing_post is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"post with id: {id} was not found",
+        )
+    existing_post_index = my_posts.index(existing_post)
+    updated_post = post.model_dump()
+    updated_post["id"] = id
+    my_posts[existing_post_index] = updated_post
+    return {"data": "Post updated successfully"}
