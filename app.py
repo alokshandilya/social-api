@@ -1,6 +1,5 @@
 import os
 import time
-from random import randrange
 
 import psycopg2
 from dotenv import load_dotenv
@@ -37,19 +36,6 @@ while True:
         time.sleep(5)
 
 
-my_posts = [
-    {"title": "Post 1", "content": "This is the content of post 1", "id": 1},
-    {"title": "Post 2", "content": "This is the content of post 2", "id": 2},
-]
-
-
-def find_posts(id: int):
-    for post in my_posts:
-        if post["id"] == id:
-            return post
-    return None
-
-
 @app.get("/")
 def read_root():
     return {"data": "Hello World"}
@@ -64,10 +50,14 @@ def read_posts():
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
 def create_post(post: Post):
-    post_dict = post.model_dump()
-    post_dict["id"] = randrange(0, 1000000)
-    my_posts.append(post_dict)
-    return {"data": "Post created successfully"}
+    cursor.execute(
+        """INSERT INTO posts (title, content, published)
+        VALUES (%s, %s, %s) RETURNING *""",
+        (post.title, post.content, post.published),
+    )
+    new_post = cursor.fetchone()
+    conn.commit()
+    return {"data": new_post}
 
 
 @app.get("/posts/{id}")
@@ -84,26 +74,29 @@ def get_post(id: int):
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int):
-    post = find_posts(id)
-    if post is None:
+    cursor.execute("""DELETE FROM posts WHERE id = %s RETURNING *""", (id,))
+    deleted_post = cursor.fetchone()
+    conn.commit()
+
+    if deleted_post is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"post with id: {id} was not found",
         )
-    my_posts.remove(post)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @app.put("/posts/{id}")
 def update_post(id: int, post: Post):
-    existing_post = find_posts(id)
-    if existing_post is None:
+    cursor.execute(
+        """UPDATE posts SET title = %s, content = %s, published = %s
+        WHERE id = %s RETURNING *""",
+        (post.title, post.content, post.published, id),
+    )
+    updated_post = cursor.fetchone()
+    if updated_post is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"post with id: {id} was not found",
         )
-    existing_post_index = my_posts.index(existing_post)
-    updated_post = post.model_dump()
-    updated_post["id"] = id
-    my_posts[existing_post_index] = updated_post
-    return {"data": "Post updated successfully"}
+    return {"data": updated_post}
