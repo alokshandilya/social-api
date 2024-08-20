@@ -10,6 +10,7 @@ build
 htmlcov
 
 .venv/
+.env
 .vscode
 __pycache__
 .python-version

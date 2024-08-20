@@ -1,8 +1,14 @@
+import os
+import time
 from random import randrange
-from typing import Optional
 
+import psycopg2
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Response, status
+from psycopg2.extras import RealDictCursor
 from pydantic import BaseModel
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -11,7 +17,24 @@ class Post(BaseModel):
     title: str
     content: str
     published: bool = True
-    rating: Optional[int] = None
+
+
+while True:
+    try:
+        conn = psycopg2.connect(
+            host=os.getenv("host"),
+            database=os.getenv("database"),
+            user=os.getenv("user"),
+            password=os.getenv("password"),
+            cursor_factory=RealDictCursor,
+        )
+        cursor = conn.cursor()
+        print("Connected to the database")
+        break
+    except Exception as e:
+        print("I am unable to connect to the database")
+        print(f"error: {e}")
+        time.sleep(5)
 
 
 my_posts = [
@@ -34,7 +57,9 @@ def read_root():
 
 @app.get("/posts")
 def read_posts():
-    return {"data": my_posts}
+    cursor.execute("""SELECT * FROM posts""")
+    posts = cursor.fetchall()
+    return {"data": posts}
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
