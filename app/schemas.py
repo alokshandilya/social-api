@@ -18,4 +18,4 @@ class Post(PostBase):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attribures = True
