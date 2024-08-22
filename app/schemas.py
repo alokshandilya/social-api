@@ -28,6 +28,7 @@ class UserCreate(BaseModel):
 
 class UserOut(BaseModel):
     id: int
+    email: EmailStr
     created_at: datetime
 
     class Config:
