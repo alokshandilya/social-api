@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app import models, schemas, utils
 from app.database import get_db
 
-router = APIRouter(prefix="/users")
+router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.post(
