@@ -81,3 +81,12 @@ def update_post(
     post_query.update(updated_post.model_dump(), synchronize_session=False)
     db.commit()
     return post_query.first()
+
+
+@app.post("/users", status_code=status.HTTP_201_CREATED)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    new_user = models.User(**user.model_dump())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
