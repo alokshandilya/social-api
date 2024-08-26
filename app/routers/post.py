@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
-from app import models, schemas
+from app import models, oauth2, schemas
 from app.database import get_db
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
@@ -20,7 +20,11 @@ def read_posts(db: Session = Depends(get_db)):
     status_code=status.HTTP_201_CREATED,
     response_model=schemas.Post,
 )
-def create_post(post: schemas.PostBase, db: Session = Depends(get_db)):
+def create_post(
+    post: schemas.PostBase,
+    db: Session = Depends(get_db),
+    get_current_user: int = Depends(oauth2.get_current_user),
+):
     new_post = models.Post(**post.model_dump())
     db.add(new_post)
     db.commit()

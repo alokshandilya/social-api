@@ -16,7 +16,7 @@ def login(
     user = db.query(models.User).filter(models.User.email == form_data.username).first()
     if not user or not utils.verify(form_data.password, user.password):
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Credentials"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credentials"
         )
 
     access_token = oauth2.create_access_token(data={"user_id": user.id})
