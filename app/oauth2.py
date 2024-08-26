@@ -13,7 +13,7 @@ load_dotenv()
 
 SECTRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
+EXP_MIN = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -22,7 +22,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 def create_access_token(data: dict):
     to_encode = data.copy()
 
-    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=EXP_MIN)
 
     to_encode.update({"exp": expire})
 
