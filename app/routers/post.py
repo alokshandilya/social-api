@@ -10,7 +10,9 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 
 
 @router.get("/", response_model=List[schemas.Post])
-def read_posts(db: Session = Depends(get_db)):
+def read_posts(
+    db: Session = Depends(get_db),
+):
     posts = db.query(models.Post).all()
     return posts
 
@@ -23,7 +25,7 @@ def read_posts(db: Session = Depends(get_db)):
 def create_post(
     post: schemas.PostBase,
     db: Session = Depends(get_db),
-    get_current_user: int = Depends(oauth2.get_current_user),
+    current_user: int = Depends(oauth2.get_current_user),
 ):
     new_post = models.Post(**post.model_dump())
     db.add(new_post)
@@ -33,7 +35,10 @@ def create_post(
 
 
 @router.get("/{id}", response_model=schemas.Post)
-def get_post(id: int, db: Session = Depends(get_db)):
+def get_post(
+    id: int,
+    db: Session = Depends(get_db),
+):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(
@@ -44,7 +49,11 @@ def get_post(id: int, db: Session = Depends(get_db)):
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id: int, db: Session = Depends(get_db)):
+def delete_post(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: int = Depends(oauth2.get_current_user),
+):
     post_query = db.query(models.Post).filter(models.Post.id == id)
 
     if post_query.first() is None:
@@ -63,6 +72,7 @@ def update_post(
     id: int,
     updated_post: schemas.PostCreate,
     db: Session = Depends(get_db),
+    current_user: int = Depends(oauth2.get_current_user),
 ):
     post_query = db.query(models.Post).filter(models.Post.id == id)
     post = post_query.first()
