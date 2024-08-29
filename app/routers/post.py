@@ -27,7 +27,7 @@ def create_post(
     db: Session = Depends(get_db),
     current_user: int = Depends(oauth2.get_current_user),
 ):
-    new_post = models.Post(user_id=current_user.id, **post.model_dump())
+    new_post = models.Post(owner_id=current_user.id, **post.model_dump())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)  # refresh the object to get the id
@@ -90,7 +90,7 @@ def update_post(
             detail=f"post with id: {id} was not found",
         )
     # check if the user is the owner of the post
-    if post.user_id != current_user.id:
+    if post.owner_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to perform requested action",
