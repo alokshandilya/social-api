@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app import models, oauth2, schemas
 from app.database import get_db
 
-router = APIRouter(prefix="/votes", tags=["Votes"])
+router = APIRouter(prefix="/vote", tags=["Votes"])
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
