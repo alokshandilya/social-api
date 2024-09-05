@@ -1,0 +1,15 @@
+.DS_Store
+.idea
+*.log
+tmp/
+.ruff_cache/
+
+*.py[cod]
+*.egg
+build
+htmlcov
+
+.venv/
+.vscode
+__pycache__
+.python-version
